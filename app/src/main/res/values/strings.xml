@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">GUIDOMIA</string>
+    <string name="pros">Pros :</string>
+    <string name="cons">Cons :</string>
+    <string name="filters">Filters</string>
+    <string name="any_make">Any make</string>
+    <string name="any_model">Any model</string>
+</resources>
