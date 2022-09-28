@@ -1,4 +1,4 @@
-package com.bell.exercise
+package com.bell.exercise.data.model
 
 import com.google.gson.annotations.SerializedName
 

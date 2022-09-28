@@ -14,10 +14,11 @@ import javax.inject.Singleton
 object RepositoryModule {
     /**
      * Provides RemoteDataRepository for access api service method
+     * @param context : used to access the resources
      */
     @Singleton
     @Provides
-    fun provideMovieRepository(
+    fun provideCarRepository(
         context: Context
     ): CarRepository {
         return CarRepository(
@@ -26,6 +27,10 @@ object RepositoryModule {
     }
 
 
+    /**
+     * Provides the context in CarRepository
+     * @param application : used to access the resources
+     */
     @Singleton
     @Provides
     fun provideContext(application: Application): Context = application.applicationContext

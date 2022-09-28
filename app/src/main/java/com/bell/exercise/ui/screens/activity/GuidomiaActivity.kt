@@ -1,4 +1,4 @@
-package com.bell.exercise
+package com.bell.exercise.ui.screens.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,12 +29,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.bell.exercise.R
+import com.bell.exercise.data.model.CarModel
 import com.bell.exercise.ui.theme.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.text.Typography.bullet
@@ -42,7 +42,7 @@ import kotlin.text.Typography.bullet
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel by viewModels<ExpandableListViewModel>()
+    private val viewModel by viewModels<GuidomiaViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(viewModel: ExpandableListViewModel) {
+fun MainScreen(viewModel: GuidomiaViewModel) {
 
     Scaffold(
         topBar = {
@@ -74,10 +74,10 @@ fun MainScreen(viewModel: ExpandableListViewModel) {
 }
 
 @Composable
-fun LoadData(viewModel: ExpandableListViewModel){
+fun LoadData(viewModel: GuidomiaViewModel){
 
     Column {
-        Row(
+        Box(
             Modifier
                 .weight(0.3f)
                 .fillMaxSize()){
@@ -88,24 +88,36 @@ fun LoadData(viewModel: ExpandableListViewModel){
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+
+            Column(modifier = Modifier
+                .wrapContentSize()
+                .align(Alignment.BottomStart)
+                .padding(bottom = dimensionResource(id = R.dimen.padding_10)))
+            {
+                Text(text = stringResource(id = R.string.tacoma_2021),
+                    color =  colorResource(id = R.color.white),
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_16))
+                )
+
+                Text(text = stringResource(id = R.string.get_yours_now),
+                    color =  colorResource(id = R.color.white),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_16))
+                )
+            }
         }
 
         Column(
             Modifier
-                .weight(0.3f)
+                .weight(0.7f)
                 .fillMaxSize()
                 .background(colorResource(id = R.color.white))
         ) {
 
-          Filter(viewModel)
-
-        }
-        Column(
-            Modifier
-                .weight(0.4f)
-                .fillMaxSize()
-                .background(colorResource(id = R.color.white))
-        ) {
+            Filter(viewModel)
 
             ExpandableList(viewModel)
 
@@ -113,41 +125,43 @@ fun LoadData(viewModel: ExpandableListViewModel){
     }
 
 }
-
 @Composable
-fun Filter(viewModel: ExpandableListViewModel){
+fun Filter(viewModel: GuidomiaViewModel){
 
-        Column(
-            modifier = Modifier
-                .padding(dimensionResource(id = R.dimen.padding_10))
-                .fillMaxSize()
-                .clip(RoundedCornerShape(10.dp))
-                .background(
-                    colorResource(id = R.color.dark_gray)
-                )
-        ){
-            Text(text = stringResource(id = R.string.filters),
-                style = MaterialTheme.typography.body2,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color =  colorResource(id = R.color.white),
-                modifier = Modifier.padding(10.dp)
-            )
+    Column(
+        modifier = Modifier
+            .padding(dimensionResource(id = R.dimen.padding_10))
+            .wrapContentSize()
+            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.size_12)))
+            .background(colorResource(id = R.color.dark_gray))
+    ) {
+        Text(
+            text = stringResource(id = R.string.filters),
+            color = colorResource(id = R.color.white),
+            fontSize = dimensionResource(id = R.dimen.font_18).value.sp,
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_10))
+        )
 
-            val carModel = viewModel.items.value
-            val make = mutableListOf<String>()
-            val model = mutableListOf<String>()
+        val carModel = viewModel.dropdownItems.value
+        val make = mutableListOf<String>()
+        val model = mutableListOf<String>()
 
-            for(items in carModel){
-                items.make?.let { make.add(it) }
-                items.model?.let { model.add(it) }
-            }
+        make.add(stringResource(id = R.string.any_make))
+        model.add(stringResource(id = R.string.any_model))
 
-            Dropdown(list = make, placeholder = stringResource(id = R.string.any_make))
-
-            Dropdown(list = model, placeholder = stringResource(id = R.string.any_model))
-
+        for (items in carModel) {
+            items.make?.let { make.add(it) }
+            items.model?.let { model.add(it) }
         }
+
+        var makeSelectedValue  = Dropdown(list = make, placeholder = stringResource(id = R.string.any_make))
+        var modelSelectedValue = Dropdown(list = model, placeholder = stringResource(id = R.string.any_model))
+
+        if(makeSelectedValue== stringResource(id = R.string.any_make)) makeSelectedValue = ""
+        if(modelSelectedValue== stringResource(id = R.string.any_model)) modelSelectedValue = ""
+
+        viewModel.filterData(makeSelectedValue,modelSelectedValue)
+    }
 
 }
 
@@ -164,6 +178,7 @@ fun Dropdown(list: MutableList<String>, placeholder : String) : String{
     Column(
         Modifier
             .padding(dimensionResource(id = R.dimen.padding_10))
+            .clip(shape = RoundedCornerShape(dimensionResource(id = R.dimen.size_6)))
             .background(colorResource(id = R.color.white))
     ) {
 
@@ -171,14 +186,21 @@ fun Dropdown(list: MutableList<String>, placeholder : String) : String{
         // with icon and not expanded
         TextField(
             value = mSelectedText,
-            onValueChange = { mSelectedText = it },
+            onValueChange = {  },
             readOnly = true,
             enabled = false,
+            textStyle = TextStyle(fontWeight = FontWeight.Bold,
+                color = colorResource(id = R.color.dark_gray),
+                fontSize = dimensionResource(id = R.dimen.font_16).value.sp),
             placeholder = {
-                Text(text = placeholder)
+                Text(text = placeholder, fontWeight = FontWeight.Bold,
+                    fontSize = dimensionResource(id = R.dimen.font_16).value.sp)
             },
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = colorResource(id = R.color.white)),
+                disabledTextColor = colorResource(id = R.color.dark_gray),
+                backgroundColor = colorResource(id = R.color.white),
+                disabledIndicatorColor = colorResource(id = R.color.transparent)
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
@@ -211,22 +233,34 @@ fun Dropdown(list: MutableList<String>, placeholder : String) : String{
     }
     return mSelectedText
 }
-
 @Composable
-fun ExpandableList(viewModel: ExpandableListViewModel) {
+fun ExpandableList(viewModel: GuidomiaViewModel) {
 
     val itemIds by viewModel.itemIds.collectAsState()
+    val carList = viewModel.items.collectAsState().value
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.margin_3))) {
-        itemsIndexed(viewModel.items.value) { index, item ->
-            ExpandableContainerView(
-                itemModel = item,
-                onClickItem = { viewModel.onItemClicked(index) },
-                expanded = itemIds.contains(index)
-            )
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.size_2))) {
+        itemsIndexed(carList) { index, item ->
 
-            if (index < viewModel.items.value.lastIndex)
-                Divider(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_10)), color = colorResource(id = R.color.orange), thickness = 2.dp)
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.background(color = colorResource(id = R.color.white))
+            ) {
+                ExpandableContainerView(
+                    itemModel = item,
+                    onClickItem = { viewModel.onItemClicked(index) },
+                    expanded = itemIds.contains(index)
+                )
+
+                if (index < carList.lastIndex) {
+                    Divider(
+                        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_12)),
+                        color = colorResource(id = R.color.orange),
+                        thickness = dimensionResource(id = R.dimen.size_2)
+                    )
+                }
+            }
         }
     }
 }
@@ -246,7 +280,10 @@ fun TopBar() {
             Text(
                 text = stringResource(id = R.string.app_name),
                 color = colorResource(id = R.color.white),
+                fontSize = dimensionResource(id = R.dimen.font_18).value.sp,
+                fontFamily = abrFatFaceRegularFont,
                 modifier = Modifier
+                    .padding(start = dimensionResource(id = R.dimen.padding_10))
                     .constrainAs(title) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
@@ -272,8 +309,6 @@ fun TopBar() {
     }
 }
 
-
-
 @Composable
 fun ExpandableContainerView(itemModel: CarModel, onClickItem: () -> Unit, expanded: Boolean) {
     Box{
@@ -289,7 +324,6 @@ fun ExpandableContainerView(itemModel: CarModel, onClickItem: () -> Unit, expand
 @Composable
 fun ListRow(carModel: CarModel, onClickItem: () -> Unit) {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clickable(
                 indication = null, // Removes the ripple effect on tap
@@ -301,7 +335,10 @@ fun ListRow(carModel: CarModel, onClickItem: () -> Unit) {
             .background(colorResource(id = R.color.light_gray))
     ) {
         Image(
-            painter = painterResource(id = R.drawable.bmw_330i),
+            painter = if(carModel.make.equals(stringResource(id = R.string.land_rover))) painterResource(id = R.drawable.range_rover)
+            else if(carModel.make.equals(stringResource(id = R.string.alpine))) painterResource(id = R.drawable.alpine_roadster)
+            else if(carModel.make.equals(stringResource(id = R.string.bmw))) painterResource(id = R.drawable.bmw_330i)
+            else painterResource(id = R.drawable.mercedez_benz_glc),
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -310,25 +347,20 @@ fun ListRow(carModel: CarModel, onClickItem: () -> Unit) {
         )
         Column(
             modifier = Modifier
-                .padding(start = dimensionResource(id = R.dimen.margin_3))
                 .weight(0.7f)
                 .align(Alignment.CenterVertically)
         ) {
-            Text(text = carModel.make + " " + carModel.model,
+                Text(text = carModel.make + " " + carModel.model,
                 fontWeight = FontWeight.Bold,
-                style = TextStyle(
-                    fontSize = (dimensionResource(id = R.dimen.font_18).value.sp)
-                ),
+                fontSize = dimensionResource(id = R.dimen.font_16).value.sp,
                 color = colorResource(id = R.color.dark_gray)
-            )
-                Text(text = carModel.customerPrice.toString(),
-                    style = MaterialTheme.typography.body2,
+                )
+
+                Text(text = stringResource(id = R.string.price)+ carModel.customerPrice.toString(),
+                    fontWeight = FontWeight.Normal,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color =  colorResource(id = R.color.dark_gray),
-                    modifier = Modifier.padding(
-                        end = 25.dp
-                    )
+                    fontSize = dimensionResource(id = R.dimen.font_14).value.sp,
+                    color =  colorResource(id = R.color.dark_gray)
                 )
 
 
@@ -366,26 +398,16 @@ fun ExpandableView(carModel: CarModel, isExpanded: Boolean) {
         enter = expandTransition,
         exit = collapseTransition
     ) {
-        Column(modifier = Modifier.background(colorResource(R.color.light_gray))) {
-           Text(
-                text = stringResource(id = R.string.pros),
-                fontSize = 16.sp,
-                color = colorResource(id = R.color.black),
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .background(colorResource(R.color.light_gray))
+            .padding(start = dimensionResource(id = R.dimen.padding_20))) {
 
-           BulletList(carModel.prosList)
+           if(carModel.prosList.isNotEmpty())
+           BulletList(carModel.prosList, stringResource(id = R.string.pros))
 
-            Text(
-                text = stringResource(id = R.string.cons),
-                fontSize = 16.sp,
-                color = colorResource(id = R.color.black),
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-
-            BulletList(carModel.consList)
+           if(carModel.consList.isNotEmpty())
+           BulletList(carModel.consList, stringResource(id = R.string.cons))
         }
     }
 
@@ -409,10 +431,9 @@ fun RatingBar(
     ) {
         for (i in 1..5) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_star_24),
+                painter = painterResource(id = R.drawable.ic_baseline_star_18),
                 contentDescription = "star",
-                modifier = modifier
-                    .wrapContentSize(),
+                modifier = modifier.wrapContentSize(),
                 tint = if (i <= ratingState) colorResource(id = R.color.orange) else colorResource(
                     id = R.color.white
                 )
@@ -423,23 +444,40 @@ fun RatingBar(
 
 
 @Composable
-fun BulletList(list: MutableList<String>) {
+fun BulletList(list: MutableList<String>, type : String) {
 
     list.removeIf { it == "" }
 
-    Text(modifier = Modifier.fillMaxSize(),
+    Text(
+        text = type,
+        fontSize = dimensionResource(id = R.dimen.font_16).value.sp,
+        fontWeight = FontWeight.Bold,
+        color = colorResource(id = R.color.dark_gray),
+        modifier = Modifier
+            .fillMaxWidth()
+    )
+
+
+    Text(modifier = Modifier
+        .fillMaxSize()
+        .padding(
+            start = dimensionResource(id = R.dimen.padding_6),
+            top = dimensionResource(id = R.dimen.padding_6)
+        ),
         color = colorResource(id = R.color.orange),
+        fontSize = dimensionResource(id = R.dimen.font_18).value.sp,
+        fontWeight = FontWeight.Bold,
         text = buildAnnotatedString {
             list.forEach {
 
-                withStyle(style = SpanStyle(colorResource(id = R.color.orange), fontSize = 20.sp)) {
-                    append(bullet)
+                withStyle(style = SpanStyle(colorResource(id = R.color.orange))) {
+                        append(bullet)
 
-                    withStyle(style = SpanStyle(color = colorResource(id = R.color.black), fontSize = 20.sp)) {
-                        append("\t\t")
-                        append(it)
-                    }
-                    append("\n")
+                        withStyle(style = SpanStyle(color = colorResource(id = R.color.black))) {
+                            append("\t\t")
+                            append(it)
+                        }
+                        append("\n")
 
                 }
             }

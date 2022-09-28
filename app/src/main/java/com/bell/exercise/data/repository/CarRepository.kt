@@ -1,15 +1,14 @@
 package com.bell.exercise.data.repository
 
 import android.content.Context
-import com.bell.exercise.CarModel
+import com.bell.exercise.data.model.CarModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.IOException
 import javax.inject.Inject
 
 class CarRepository @Inject constructor(
-    private val context: Context,
-    ) {
+    private val context: Context) {
 
     fun loadData(): List<CarModel> {
 
@@ -23,7 +22,6 @@ class CarRepository @Inject constructor(
         }
 
         val listCountryType = object : TypeToken<List<CarModel>>() {}.type
-        println("Datass:-"+Gson().fromJson(jsonString, listCountryType))
         return Gson().fromJson(jsonString, listCountryType)
     }
 
