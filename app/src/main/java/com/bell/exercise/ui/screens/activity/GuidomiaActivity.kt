@@ -237,7 +237,7 @@ fun Dropdown(list: MutableList<String>, placeholder : String) : String{
 fun ExpandableList(viewModel: GuidomiaViewModel) {
 
     val itemIds by viewModel.itemIds.collectAsState()
-    val carList = viewModel.items.collectAsState().value
+    val carList = viewModel.carItems.collectAsState().value
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.size_2))) {
         itemsIndexed(carList) { index, item ->

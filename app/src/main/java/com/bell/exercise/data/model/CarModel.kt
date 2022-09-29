@@ -1,8 +1,16 @@
 package com.bell.exercise.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.bell.exercise.core.Constants.Companion.CAR_TABLE
 import com.google.gson.annotations.SerializedName
 
+@Entity(tableName = CAR_TABLE)
 data class CarModel(
+
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+
     @SerializedName("consList")
     var consList: ArrayList<String> = arrayListOf(),
 

@@ -15,8 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GuidomiaViewModel @Inject constructor(private val repo: CarRepository) : ViewModel() {
 
-    private val itemsList = MutableStateFlow(listOf<CarModel>())
-    val items: StateFlow<List<CarModel>> get() = itemsList
+    private val carItemsList = MutableStateFlow(listOf<CarModel>())
+    val carItems: StateFlow<List<CarModel>> get() = carItemsList
 
     private val dropdownItemsList = MutableStateFlow(listOf<CarModel>())
     val dropdownItems: StateFlow<List<CarModel>> get() = dropdownItemsList
@@ -31,8 +31,9 @@ class GuidomiaViewModel @Inject constructor(private val repo: CarRepository) : V
     private fun getData() {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-               itemsList.emit(repo.loadData())
-               dropdownItemsList.emit(repo.loadData())
+               val carData = repo.loadData()
+                carItemsList.emit(carData)
+               dropdownItemsList.emit(carData)
             }
         }
     }
@@ -49,12 +50,12 @@ class GuidomiaViewModel @Inject constructor(private val repo: CarRepository) : V
                             filteredList.add(car)
                         }
                     }
-                    itemsList.value = filteredList
+                    carItemsList.value = filteredList
                 }
             }
         }
         else{
-            itemsList.value = dropdownItems.value
+            carItemsList.value = dropdownItems.value
         }
     }
 
