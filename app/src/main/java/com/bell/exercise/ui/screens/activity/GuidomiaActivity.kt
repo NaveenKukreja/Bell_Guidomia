@@ -37,10 +37,14 @@ import com.bell.exercise.R
 import com.bell.exercise.data.model.CarModel
 import com.bell.exercise.ui.theme.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.text.Typography.bullet
+import kotlin.math.ln
+import kotlin.math.pow
 
+/**
+ *GuidomiaActivity is compose activity for Car data screen
+ */
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class GuidomiaActivity : ComponentActivity() {
 
     private val viewModel by viewModels<GuidomiaViewModel>()
 
@@ -48,10 +52,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Bell_NativeTheme {
-                // A surface container using the 'background' color from the theme
+                // A surface container
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier.fillMaxSize()
                 ) {
                    MainScreen(viewModel = viewModel)
                 }
@@ -60,6 +63,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * MainScreen method is used to show the TopAppBar
+ * @param viewModel - viewModel instance
+ */
 @Composable
 fun MainScreen(viewModel: GuidomiaViewModel) {
 
@@ -73,6 +80,10 @@ fun MainScreen(viewModel: GuidomiaViewModel) {
 
 }
 
+/**
+ * LoadData method is used to show the UI
+ * @param viewModel - viewModel instance
+ */
 @Composable
 fun LoadData(viewModel: GuidomiaViewModel){
 
@@ -92,20 +103,23 @@ fun LoadData(viewModel: GuidomiaViewModel){
             Column(modifier = Modifier
                 .wrapContentSize()
                 .align(Alignment.BottomStart)
-                .padding(bottom = dimensionResource(id = R.dimen.padding_10)))
+                .padding(
+                    start = dimensionResource(id = R.dimen.margin_padding_20),
+                    bottom = dimensionResource(id = R.dimen.margin_padding_10)
+                ))
             {
                 Text(text = stringResource(id = R.string.tacoma_2021),
                     color =  colorResource(id = R.color.white),
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_16))
+                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.margin_padding_16))
                 )
 
                 Text(text = stringResource(id = R.string.get_yours_now),
                     color =  colorResource(id = R.color.white),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_16))
+                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.margin_padding_16))
                 )
             }
         }
@@ -125,21 +139,31 @@ fun LoadData(viewModel: GuidomiaViewModel){
     }
 
 }
+
+/**
+ * Filter method is used to filter the data
+ * @param viewModel - viewModel instance
+ */
 @Composable
 fun Filter(viewModel: GuidomiaViewModel){
 
     Column(
         modifier = Modifier
-            .padding(dimensionResource(id = R.dimen.padding_10))
-            .wrapContentSize()
+            .padding(dimensionResource(id = R.dimen.margin_padding_20))
+            .fillMaxWidth()
             .clip(RoundedCornerShape(dimensionResource(id = R.dimen.size_12)))
             .background(colorResource(id = R.color.dark_gray))
     ) {
         Text(
-            text = stringResource(id = R.string.filters),
+            text = stringResource(id = R.string.filters_title),
             color = colorResource(id = R.color.white),
-            fontSize = dimensionResource(id = R.dimen.font_18).value.sp,
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_10))
+            fontSize = dimensionResource(id = R.dimen.text_size_18).value.sp,
+            modifier = Modifier.padding(
+                start = dimensionResource(id = R.dimen.margin_padding_20),
+                end = dimensionResource(id = R.dimen.margin_padding_10),
+                top = dimensionResource(id = R.dimen.margin_padding_10),
+                bottom = dimensionResource(id = R.dimen.margin_padding_10)
+            )
         )
 
         val carModel = viewModel.dropdownItems.value
@@ -154,35 +178,47 @@ fun Filter(viewModel: GuidomiaViewModel){
             items.model?.let { model.add(it) }
         }
 
-        var makeSelectedValue  = Dropdown(list = make, placeholder = stringResource(id = R.string.any_make))
-        var modelSelectedValue = Dropdown(list = model, placeholder = stringResource(id = R.string.any_model))
+        Column(modifier = Modifier.padding(
+            start = dimensionResource(id = R.dimen.margin_padding_10),
+            end = dimensionResource(id = R.dimen.margin_padding_10),
+            bottom = dimensionResource(id = R.dimen.margin_padding_10)
+        )) {
+            var makeSelectedValue  = Dropdown(list = make, placeholder = stringResource(id = R.string.any_make))
+            var modelSelectedValue = Dropdown(list = model, placeholder = stringResource(id = R.string.any_model))
 
-        if(makeSelectedValue== stringResource(id = R.string.any_make)) makeSelectedValue = ""
-        if(modelSelectedValue== stringResource(id = R.string.any_model)) modelSelectedValue = ""
+            if(makeSelectedValue == stringResource(id = R.string.any_make)) makeSelectedValue = ""
+            if(modelSelectedValue == stringResource(id = R.string.any_model)) modelSelectedValue = ""
 
-        viewModel.filterData(makeSelectedValue,modelSelectedValue)
+            viewModel.filterData(makeSelectedValue,modelSelectedValue)
+        }
+
     }
 
 }
 
+/**
+ * Dropdown method is used to show the Make/Model dropdown
+ * @param list - list to be bind in dropdown
+ * @param placeholder - placeholder for dropdown
+ */
 @Composable
 fun Dropdown(list: MutableList<String>, placeholder : String) : String{
 
     var mExpanded by remember { mutableStateOf(false) }
 
-    // Create a string value to store the selected city
+    // Create a string value to store the selected car
     var mSelectedText by remember { mutableStateOf("") }
 
     var mTextFieldSize by remember { mutableStateOf(androidx.compose.ui.geometry.Size.Zero)}
 
     Column(
         Modifier
-            .padding(dimensionResource(id = R.dimen.padding_10))
+            .padding(dimensionResource(id = R.dimen.margin_padding_10))
             .clip(shape = RoundedCornerShape(dimensionResource(id = R.dimen.size_6)))
             .background(colorResource(id = R.color.white))
     ) {
 
-        // Create an Outlined Text Field
+        // Create an Text Field
         // with icon and not expanded
         TextField(
             value = mSelectedText,
@@ -191,10 +227,10 @@ fun Dropdown(list: MutableList<String>, placeholder : String) : String{
             enabled = false,
             textStyle = TextStyle(fontWeight = FontWeight.Bold,
                 color = colorResource(id = R.color.dark_gray),
-                fontSize = dimensionResource(id = R.dimen.font_16).value.sp),
+                fontSize = dimensionResource(id = R.dimen.text_size_16).value.sp),
             placeholder = {
                 Text(text = placeholder, fontWeight = FontWeight.Bold,
-                    fontSize = dimensionResource(id = R.dimen.font_16).value.sp)
+                    fontSize = dimensionResource(id = R.dimen.text_size_16).value.sp)
             },
             colors = TextFieldDefaults.textFieldColors(
                 disabledTextColor = colorResource(id = R.color.dark_gray),
@@ -233,13 +269,20 @@ fun Dropdown(list: MutableList<String>, placeholder : String) : String{
     }
     return mSelectedText
 }
+
+/**
+ * ExpandableList method is used to show the Expandable list
+ * @param viewModel - viewModel instance
+ */
 @Composable
 fun ExpandableList(viewModel: GuidomiaViewModel) {
 
     val itemIds by viewModel.itemIds.collectAsState()
     val carList = viewModel.carItems.collectAsState().value
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.size_2))) {
+    LazyColumn(
+        modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.margin_padding_20)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.size_2))) {
         itemsIndexed(carList) { index, item ->
 
             Column(
@@ -255,7 +298,12 @@ fun ExpandableList(viewModel: GuidomiaViewModel) {
 
                 if (index < carList.lastIndex) {
                     Divider(
-                        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_12)),
+                        modifier = Modifier.padding(
+                           start = dimensionResource(id = R.dimen.margin_padding_10),
+                           end = dimensionResource(id = R.dimen.margin_padding_10),
+                           top = dimensionResource(id = R.dimen.margin_padding_10),
+                           bottom = dimensionResource(id = R.dimen.margin_padding_10),
+                        ),
                         color = colorResource(id = R.color.orange),
                         thickness = dimensionResource(id = R.dimen.size_2)
                     )
@@ -265,6 +313,9 @@ fun ExpandableList(viewModel: GuidomiaViewModel) {
     }
 }
 
+/**
+ * TopBar method is used to show the TopAppBar
+ */
 @Composable
 fun TopBar() {
     TopAppBar(
@@ -280,10 +331,10 @@ fun TopBar() {
             Text(
                 text = stringResource(id = R.string.app_name),
                 color = colorResource(id = R.color.white),
-                fontSize = dimensionResource(id = R.dimen.font_18).value.sp,
+                fontSize = dimensionResource(id = R.dimen.text_size_18).value.sp,
                 fontFamily = abrFatFaceRegularFont,
                 modifier = Modifier
-                    .padding(start = dimensionResource(id = R.dimen.padding_10))
+                    .padding(start = dimensionResource(id = R.dimen.margin_padding_10))
                     .constrainAs(title) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
@@ -309,6 +360,11 @@ fun TopBar() {
     }
 }
 
+/**
+ * ExpandableContainerView method is the UI for Expandable list
+ * @param itemModel - data object
+ * @param onClickItem - lambda function for onClick callback
+ */
 @Composable
 fun ExpandableContainerView(itemModel: CarModel, onClickItem: () -> Unit, expanded: Boolean) {
     Box{
@@ -320,6 +376,11 @@ fun ExpandableContainerView(itemModel: CarModel, onClickItem: () -> Unit, expand
 }
 
 
+/**
+ * ListRow method is the UI for Expandable list header
+ * @param carModel - data object
+ * @param onClickItem - lambda function for onClick callback
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ListRow(carModel: CarModel, onClickItem: () -> Unit) {
@@ -332,45 +393,62 @@ fun ListRow(carModel: CarModel, onClickItem: () -> Unit) {
             )
             .wrapContentHeight()
             .fillMaxWidth()
+            .padding(
+                start = dimensionResource(id = R.dimen.margin_padding_10),
+                end = dimensionResource(id = R.dimen.margin_padding_10)
+            )
             .background(colorResource(id = R.color.light_gray))
     ) {
         Image(
-            painter = if(carModel.make.equals(stringResource(id = R.string.land_rover))) painterResource(id = R.drawable.range_rover)
-            else if(carModel.make.equals(stringResource(id = R.string.alpine))) painterResource(id = R.drawable.alpine_roadster)
-            else if(carModel.make.equals(stringResource(id = R.string.bmw))) painterResource(id = R.drawable.bmw_330i)
+            painter = if(carModel.make.equals(stringResource(id = R.string.land_rover_car))) painterResource(id = R.drawable.range_rover)
+            else if(carModel.make.equals(stringResource(id = R.string.alpine_car))) painterResource(id = R.drawable.alpine_roadster)
+            else if(carModel.make.equals(stringResource(id = R.string.bmw_car))) painterResource(id = R.drawable.bmw_330i)
             else painterResource(id = R.drawable.mercedez_benz_glc),
             contentDescription = "",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .weight(0.3f)
-                .padding(dimensionResource(id = R.dimen.padding_10))
+                .padding(dimensionResource(id = R.dimen.margin_padding_10))
         )
         Column(
             modifier = Modifier
                 .weight(0.7f)
                 .align(Alignment.CenterVertically)
+
         ) {
                 Text(text = carModel.make + " " + carModel.model,
                 fontWeight = FontWeight.Bold,
-                fontSize = dimensionResource(id = R.dimen.font_16).value.sp,
+                fontSize = dimensionResource(id = R.dimen.text_size_16).value.sp,
                 color = colorResource(id = R.color.dark_gray)
                 )
 
-                Text(text = stringResource(id = R.string.price)+ carModel.customerPrice.toString(),
+                Text(text = stringResource(id = R.string.price_title)+ withSuffix(carModel.customerPrice?.toLong() ?: 0),
                     fontWeight = FontWeight.Normal,
-                    maxLines = 1,
-                    fontSize = dimensionResource(id = R.dimen.font_14).value.sp,
+                    fontSize = dimensionResource(id = R.dimen.text_size_14).value.sp,
                     color =  colorResource(id = R.color.dark_gray)
                 )
-
 
             RatingBar(rating = carModel.rating ?: 0, modifier = Modifier)
         }
     }
 }
 
+/**
+ * withSuffix method is used for formatting the car price value
+ * @param price - price of car
+ */
+fun withSuffix(price: Long): String {
+    if (price < 1000) return "" + price
+    val exp = (ln(price.toDouble()) / ln(1000.0)).toInt()
+    return String.format("%.0f%c", price / 1000.0.pow(exp.toDouble()), "k"[exp - 1])
+}
 
 
+/**
+ * ExpandableView method is the expanded UI in Expandable list
+ * @param carModel - data object
+ * @param isExpanded - boolean to check the expanded state
+ */
 @Composable
 fun ExpandableView(carModel: CarModel, isExpanded: Boolean) {
     // Opening Animation
@@ -398,23 +476,73 @@ fun ExpandableView(carModel: CarModel, isExpanded: Boolean) {
         enter = expandTransition,
         exit = collapseTransition
     ) {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .background(colorResource(R.color.light_gray))
-            .padding(start = dimensionResource(id = R.dimen.padding_20))) {
+        Row(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(
+                    start = dimensionResource(id = R.dimen.margin_padding_10),
+                    end = dimensionResource(id = R.dimen.margin_padding_10)
+                )){
 
-           if(carModel.prosList.isNotEmpty())
-           BulletList(carModel.prosList, stringResource(id = R.string.pros))
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .background(colorResource(R.color.light_gray))
+                .padding(
+                    start = dimensionResource(id = R.dimen.margin_padding_20),
+                    bottom = dimensionResource(id = R.dimen.margin_padding_10)
+                )) {
 
-           if(carModel.consList.isNotEmpty())
-           BulletList(carModel.consList, stringResource(id = R.string.cons))
+            carModel.prosList.removeIf { it == "" }
+            carModel.consList.removeIf { it == "" }
+
+            val prosList = carModel.prosList
+            val consList = carModel.consList
+
+
+           if(prosList.isNotEmpty()) {
+
+               Text(
+                   text = stringResource(id = R.string.pros_title),
+                   fontSize = dimensionResource(id = R.dimen.text_size_18).value.sp,
+                   fontWeight = FontWeight.Bold,
+                   color = colorResource(id = R.color.dark_gray),
+                   modifier = Modifier
+                       .fillMaxWidth()
+               )
+
+               for(prosItem in prosList)
+                   BulletText(prosItem)
+           }
+
+
+         if(consList.isNotEmpty()){
+
+               Text(
+                   text = stringResource(id = R.string.cons_title),
+                   fontSize = dimensionResource(id = R.dimen.text_size_18).value.sp,
+                   fontWeight = FontWeight.Bold,
+                   color = colorResource(id = R.color.dark_gray),
+                   modifier = Modifier
+                       .fillMaxWidth()
+               )
+
+               for(consItem in consList)
+               BulletText(consItem)
+           }
+
         }
+    }
     }
 
 
 }
 
-
+/**
+ * RatingBar method is used to show the Rating view
+ * @param modifier - modifier for customization
+ * @param rating - no of rating
+ */
 @ExperimentalComposeUiApi
 @Composable
 fun RatingBar(
@@ -427,7 +555,7 @@ fun RatingBar(
 
     Row(
         modifier = Modifier.fillMaxSize(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         for (i in 1..5) {
             Icon(
@@ -443,45 +571,33 @@ fun RatingBar(
 }
 
 
+/**
+ * RatingBar method is used to show the text with bullet
+ * @param text - text to be display with bullet
+ */
 @Composable
-fun BulletList(list: MutableList<String>, type : String) {
+fun BulletText(text: String) {
 
-    list.removeIf { it == "" }
+    Row {
 
-    Text(
-        text = type,
-        fontSize = dimensionResource(id = R.dimen.font_16).value.sp,
-        fontWeight = FontWeight.Bold,
-        color = colorResource(id = R.color.dark_gray),
-        modifier = Modifier
-            .fillMaxWidth()
-    )
+        Text(
+            text = "\u2022",
+            fontSize = dimensionResource(id = R.dimen.text_size_18).value.sp,
+            color = colorResource(id = R.color.orange),
+            modifier = Modifier.wrapContentSize()
+        )
 
-
-    Text(modifier = Modifier
-        .fillMaxSize()
-        .padding(
-            start = dimensionResource(id = R.dimen.padding_6),
-            top = dimensionResource(id = R.dimen.padding_6)
-        ),
-        color = colorResource(id = R.color.orange),
-        fontSize = dimensionResource(id = R.dimen.font_18).value.sp,
-        fontWeight = FontWeight.Bold,
-        text = buildAnnotatedString {
-            list.forEach {
-
-                withStyle(style = SpanStyle(colorResource(id = R.color.orange))) {
-                        append(bullet)
-
-                        withStyle(style = SpanStyle(color = colorResource(id = R.color.black))) {
-                            append("\t\t")
-                            append(it)
-                        }
-                        append("\n")
-
-                }
-            }
-        }
-    )
+        Text(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = dimensionResource(id = R.dimen.margin_padding_6),
+                    end = dimensionResource(id = R.dimen.margin_padding_6)),
+            color = colorResource(id = R.color.black),
+            fontSize = dimensionResource(id = R.dimen.text_size_16).value.sp,
+            fontWeight = FontWeight.Bold,
+            text = text
+        )
+    }
 
 }

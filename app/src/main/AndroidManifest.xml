@@ -14,9 +14,10 @@
         android:name="com.bell.HiltApplication"
         tools:targetApi="31">
         <activity
-            android:name=".ui.screens.activity.MainActivity"
+            android:name=".ui.screens.activity.GuidomiaActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Bell_Native">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,9 +1,12 @@
-package com.bell.exercise.data.network
+package com.bell.exercise.data.db
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
+/**
+ *Converter class is used to store the list in room db
+*/
 class Converter {
     @TypeConverter
     fun fromString(value: String?): ArrayList<String> {

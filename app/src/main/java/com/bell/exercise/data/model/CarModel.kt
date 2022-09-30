@@ -5,6 +5,9 @@ import androidx.room.PrimaryKey
 import com.bell.exercise.core.Constants.Companion.CAR_TABLE
 import com.google.gson.annotations.SerializedName
 
+/**
+ *CarModel class is used to hold the Car data and table in room db
+ */
 @Entity(tableName = CAR_TABLE)
 data class CarModel(
 

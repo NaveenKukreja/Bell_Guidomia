@@ -4,20 +4,27 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.bell.exercise.core.Constants.Companion.CAR_TABLE
-import com.bell.exercise.data.network.CarDao
+import com.bell.exercise.data.db.CarDao
 import com.bell.exercise.data.repository.CarRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import com.bell.exercise.data.network.CarDb
+import com.bell.exercise.data.db.CarDb
 import javax.inject.Singleton
 
+/**
+ * RepositoryModule class is used to inject the dependencies
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
+    /**
+     * provideCarDb method will initialize the room db
+     * @param context : used to access the resources
+     */
     @Provides
     fun provideCarDb(
         @ApplicationContext
@@ -31,6 +38,7 @@ object RepositoryModule {
     /**
      * Provides RemoteDataRepository for access api service method
      * @param context : used to access the resources
+     * @param carDao : used to interact with the data in Room DB
      */
     @Singleton
     @Provides
@@ -43,10 +51,14 @@ object RepositoryModule {
         )
     }
 
+    /**
+     * provideCarDb method will provide the DAO object
+     * @param carDb : appDatabase class
+     */
     @Provides
     fun provideCarDao(
-        bookDb: CarDb
-    ) = bookDb.carDao()
+        carDb: CarDb
+    ) = carDb.carDao()
 
 
     /**

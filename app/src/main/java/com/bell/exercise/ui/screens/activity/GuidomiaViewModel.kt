@@ -12,6 +12,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+
+/**
+ *GuidomiaViewModel is viewModel for GuidomiaActivity
+ * @param repo - car repository object
+ */
 @HiltViewModel
 class GuidomiaViewModel @Inject constructor(private val repo: CarRepository) : ViewModel() {
 
@@ -25,19 +30,27 @@ class GuidomiaViewModel @Inject constructor(private val repo: CarRepository) : V
     val itemIds: StateFlow<List<Int>> get() = itemIdsList
 
     init {
-        getData()
+        fetchData()
     }
 
-    private fun getData() {
+    /**
+     * fetchData is used to fetch the data from repo
+     */
+    private fun fetchData() {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                val carData = repo.loadData()
-                carItemsList.emit(carData)
+               carItemsList.emit(carData)
                dropdownItemsList.emit(carData)
             }
         }
     }
 
+    /**
+     * filterData method is used for filter the expandable list
+     * @param make - car brand name
+     * @param model - car model name
+     */
     fun filterData(make:String, model:String) {
 
         if (make.isNotEmpty() || model.isNotEmpty()) {
@@ -59,6 +72,11 @@ class GuidomiaViewModel @Inject constructor(private val repo: CarRepository) : V
         }
     }
 
+
+    /**
+     * onItemClicked method is used to manage the expand and collapse state
+     * @param itemId - it is the id for expanded list
+     */
     fun onItemClicked(itemId: Int) {
         itemIdsList.value = itemIdsList.value.toMutableList().also { list ->
             if (list.contains(itemId)) {
