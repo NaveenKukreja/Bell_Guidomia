@@ -299,8 +299,8 @@ fun ExpandableList(viewModel: GuidomiaViewModel) {
                 if (index < carList.lastIndex) {
                     Divider(
                         modifier = Modifier.padding(
-                           start = dimensionResource(id = R.dimen.margin_padding_10),
-                           end = dimensionResource(id = R.dimen.margin_padding_10),
+                           start = dimensionResource(id = R.dimen.margin_padding_20),
+                           end = dimensionResource(id = R.dimen.margin_padding_20),
                            top = dimensionResource(id = R.dimen.margin_padding_10),
                            bottom = dimensionResource(id = R.dimen.margin_padding_10),
                         ),
